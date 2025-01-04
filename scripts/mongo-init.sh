@@ -16,23 +16,27 @@ rs.initiate(
 );
 EOF
 
-docker compose exec -T shard1 mongosh --port 27018 <<EOF
+docker compose exec -T shard1_primary mongosh --port 27018 <<EOF
 rs.initiate(
     {
         _id : "shard1",
         members: [
-            { _id : 0, host : "shard1:27018" }
+            { _id: 0, host: "shard1_primary:27018" },
+            { _id: 1, host: "shard1_secondary_1:27018" },
+            { _id: 2, host: "shard1_secondary_2:27018" }
         ]
     }
 );
 EOF
 
-docker compose exec -T shard2 mongosh --port 27019 <<EOF
+docker compose exec -T shard2_primary mongosh --port 27019 <<EOF
 rs.initiate(
     {
         _id : "shard2",
         members: [
-            { _id : 1, host : "shard2:27019" }
+            { _id: 0, host: "shard2_primary:27019" },
+            { _id: 1, host: "shard2_secondary_1:27019" },
+            { _id: 2, host: "shard2_secondary_2:27019" }
         ]
     }
 );
@@ -41,8 +45,8 @@ EOF
 sleep 5
 
 docker compose exec -T mongos_router mongosh --port 27020 <<EOF
-sh.addShard( "shard1/shard1:27018");
-sh.addShard( "shard2/shard2:27019");
+sh.addShard("shard1/shard1_primary:27018,shard1_secondary_1:27018,shard1_secondary_2:27018");
+sh.addShard("shard2/shard2_primary:27019,shard2_secondary_1:27019,shard2_secondary_2:27019");
 sh.enableSharding("somedb");
 sh.shardCollection("somedb.helloDoc", { "name" : "hashed" } );
 use somedb;
