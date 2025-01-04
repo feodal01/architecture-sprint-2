@@ -17,6 +17,7 @@ docker compose up -d
 ```shell
 ./scripts/mongo-init.sh
 ```
+В итоге в монге будет создана бд somedb и коллекция helloDoc с 1000 документами
 
 ## Как проверить
 
